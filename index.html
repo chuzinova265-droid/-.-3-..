@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Вместе или врозь? — Игра</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html, body {
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: #1a2a3a;
+            color: #333;
+        }
+
+        .app { 
+            display: flex; 
+            width: 100vw; 
+            height: 100vh; 
+            background: #2e4a5a; 
+            position: relative;
+        }
+
+        .scene-wrapper {
+            flex: 1 1 auto; 
+            height: 100%;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            background: #87CEEB; 
+            position: relative; 
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .canvas-container {
+            position: relative; 
+            width: 100%; 
+            height: 100%;
+            max-width: 100%; 
+            max-height: 100%;
+            aspect-ratio: 4 / 3; 
+            background: #87CEEB;
+        }
+
+        canvas {
+            display: block; 
+            width: 100%; 
+            height: 100%;
+            background: transparent; 
+            image-rendering: auto; 
+            cursor: default;
+        }
+
+        .info-panel {
+            width: calc(30% + 290px); 
+            height: 100%;
+            background: #d4edda;
+            box-shadow: -6px 0 20px rgba(0,0,0,0.15);
+            flex-shrink: 0; 
+            min-width: 320px;
+            border: 12px solid #1e4a1e;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .panel-content {
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .title-scarlet {
+            color: #FF2400;
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
+            transform: translateY(-40px);
+        }
+
+        .greeting-main {
+            font-size: 1.8em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #1e4a1e;
+        }
+
+        .greeting-text {
+            font-size: 1.3em;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .rules-box {
+            border: 3px dashed #1e4a1e;
+            background: #fff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 1.25em;
+            line-height: 1.4;
+        }
+        .rules-box h3 {
+            color: #d9534f;
+            margin-bottom: 8px;
+            font-size: 1.2em;
+        }
+
+        .intro-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+        .intro-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .intro-footer {
+            margin-top: auto;
+            padding-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn-start {
+            background: linear-gradient(to bottom, #5cb85c, #4cae4c);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 0 #3d8b3d;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #3d8b3d;
+        }
+
+        .fence-container {
+            position: relative;
+            width: 100% !important;
+            flex: 1;
+            min-height: 350px;
+            margin: 10px 0;
+        }
+        
+        .fence-svg {
+            width: 100% !important;
+            height: 75% !important;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 2;
+        }
+
+        .flowers-svg {
+            width: 100% !important;
+            height: 45% !important;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 3;
+        }
+
+        .task-tablet {
+            position: absolute;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 600px;
+            background: linear-gradient(to bottom, #f5e6c8, #e6d4a8);
+            color: #3d2814;
+            border: 3px solid #8B5A2B;
+            padding: 14px 18px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: 0 4px 0 #6B4226;
+            line-height: 1.4;
+            text-align: center;
+            z-index: 4;
+            word-break: normal;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+
+        .task-tablet.fairy-tale {
+            top: calc(5% + 40px);
+            font-size: 1.35em;
+        }
+
+        .buttons-on-fence {
+            position: absolute;
+            bottom: 25%;
+            left: 0;
+            right: 0;
+            width: 100% !important;
+            display: flex;
+            justify-content: space-around;
+            z-index: 4;
+        }
+
+        .btn-wrapper {
+            position: relative;
+            width: 48%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .rope {
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            width: 3px;
+            height: 28px;
+            background: #5a3a1a;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .btn-answer {
+            width: 100%;
+            background: linear-gradient(to bottom, #f5e6c8, #e6d4a8);
+            color: #3d2814;
+            border: 3px solid #8B5A2B;
+            padding: 16px 12px;
+            font-size: 1.4em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 0 #6B4226;
+            word-break: normal;
+            overflow-wrap: break-word;
+            white-space: normal;
+            line-height: 1.3;
+            text-align: center;
+        }
+
+        .btn-answer.number-btn {
+            font-size: 2em;
+        }
+
+        .btn-answer:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #6B4226;
+            background: linear-gradient(to bottom, #fff0d4, #f5e6c8);
+        }
+
+        .score-counter {
+            background: #fff;
+            border: 2px solid #1e4a1e;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            color: #0044cc;
+        }
+
+        .error-message {
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #d9534f;
+            font-size: 2.4em;
+            font-weight: bold;
+            z-index: 5;
+            animation: errorPop 1.8s ease-out;
+            text-shadow: 
+                2px 2px 0 #fff,
+                -2px -2px 0 #fff,
+                2px -2px 0 #fff,
+                -2px 2px 0 #fff,
+                0 3px 6px rgba(0,0,0,0.4);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        @keyframes errorPop {
+            0% { opacity: 0; transform: translateX(-50%) scale(0.5); }
+            15% { opacity: 1; transform: translateX(-50%) scale(1.3); }
+            30% { transform: translateX(-50%) scale(1); }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translateX(-50%) scale(0.9); }
+        }
+
+        .final-title {
+            color: #1e4a1e;
+            margin-top: 30px;
+            margin-bottom: 10px;
+            font-size: 2em;
+            transform: translateY(-20px);
+        }
+
+        /* РЕЗУЛЬТАТ СЧЁТЧИКА: алый красный, жирный */
+        .final-score {
+            font-size: 1.6em;
+            font-weight: 900;
+            color: #FF2400;
+            margin: 15px 0;
+            white-space: nowrap;
+            width: 100%;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
+        }
+
+        /* МОТИВИРУЮЩИЕ СЛОВА: тёмно-синий, увеличенный размер */
+        .motivational-text {
+            font-size: 1.7em;
+            font-weight: bold;
+            color: #001f4d;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .motivational-text .mot-line {
+            display: block;
+            margin: 4px 0;
+        }
+
+        .poem-text {
+            font-size: 1.25em;
+            font-weight: bold;
+            font-style: italic;
+            line-height: 1.7;
+            color: #1e4a1e;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 3px solid #1e4a1e;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+            width: 92%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .poem-text .poem-line {
+            display: block;
+            white-space: nowrap;
+            margin: 4px 0;
+        }
+
+        .caps-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .balloon {
+            position: absolute;
+            font-size: 2.5em;
+            animation: flyUp 4s linear infinite;
+            opacity: 0;
+            bottom: -50px;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-110vh) rotate(20deg); opacity: 0.9; }
+        }
+
+        @media (max-width: 1024px) {
+            .info-panel { width: 40%; min-width: 300px; }
+        }
+        @media (max-width: 768px) {
+            .app { flex-direction: column; }
+            .scene-wrapper { height: 45vh; flex: none; }
+            .info-panel { width: 100%; height: 55vh; border: 12px solid #1e4a1e; min-width: 0; }
+            .canvas-container { aspect-ratio: auto; height: 100%; }
+            .title-scarlet { font-size: 1.8em; transform: translateY(-20px); }
+            .greeting-main { font-size: 1.4em; }
+            .greeting-text { font-size: 1.1em; }
+            .rules-box { font-size: 1.1em; }
+            .btn-answer { font-size: 1.15em; padding: 12px 8px; }
+            .btn-answer.number-btn { font-size: 1.6em; }
+            .task-tablet { font-size: 1.05em; padding: 10px 12px; }
+            .task-tablet.fairy-tale { font-size: 1.1em; }
+            .poem-text { font-size: 1.05em; padding: 10px 15px; }
+            .motivational-text { font-size: 1.3em; }
+            .final-score { font-size: 1.3em; }
+        }
+        @media (max-width: 480px) {
+            .scene-wrapper { height: 40vh; }
+            .info-panel { height: 60vh; padding: 10px; }
+            .panel-content { padding: 10px; }
+            .poem-text { font-size: 0.9em; padding: 8px 10px; }
+            .btn-answer { font-size: 1em; }
+            .btn-answer.number-btn { font-size: 1.4em; }
+            .task-tablet { font-size: 0.9em; }
+            .task-tablet.fairy-tale { font-size: 0.95em; }
+            .error-message { font-size: 1.8em; }
+            .motivational-text { font-size: 1.1em; }
+            .final-score { font-size: 1.15em; }
+        }
+        @media (max-height: 500px) and (orientation: landscape) {
+            .app { flex-direction: row; }
+            .scene-wrapper { width: 50%; height: 100%; }
+            .info-panel { width: 50%; height: 100%; border: 12px solid #1e4a1e; }
+            .fence-container { min-height: 180px; }
+            .rules-box { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <main class="scene-wrapper">
+            <figure class="canvas-container">
+                <canvas id="gameCanvas" width="800" height="600" aria-label="Игровая сцена: Избушка на курьих ножках"></canvas>
+            </figure>
+        </main>
+
+        <nav class="info-panel" aria-label="Панель управления игрой">
+            <div class="panel-content" id="panelContent"></div>
+        </nav>
+    </div>
+
+    <script>
+        const gameData = [
+            {
+                type: 'intro',
+                title: 'Вместе или врозь?',
+                greetingMain: 'Дорогой друг!',
+                greetingText: 'Давай повторим тему «Правописание приставок и предлогов». Чтобы выполнить все задания надо уметь отличать приставки и предлоги, знать хорошо правила.',
+                rules: [
+                    { title: 'ПРАВИЛО № 1', text: 'Приставка – это значимая часть слова, пишется слитно. Между приставкой и корнем нельзя вставить слово.' },
+                    { title: 'ПРАВИЛО № 2', text: 'Предлог – это часть речи, со словами пишется раздельно. Между предлогом и следующим словом можно вставить другое слово, вопрос или волшебное слово «мой, моя, моё».' }
+                ]
+            },
+            { question: 'Выбери слово с приставкой.', options: ['(по)смотрел', '(по)сторонам'], correctIndex: 0 },
+            { question: 'Выбери слово с предлогом.', options: ['(про)читал', '(про)собаку'], correctIndex: 1 },
+            { question: 'В каком слове нет приставки?', options: ['(из)бумаги', '(из)готовил'], correctIndex: 0 },
+            { question: 'Выбери карточку, в которой указаны только приставки.', options: ['(по)дороге,<br>(на)бумаге,<br>(от)дома', '(по)смотрел,<br>(на)рисовал,<br>(от)бежал'], correctIndex: 1 },
+            { question: 'Выбери карточку, в которой указаны только предлоги.', options: ['(за)школу,<br>(про)сестру,<br>(под)столом', '(за)шёл,<br>(про)говорил,<br>(под)метала'], correctIndex: 0 },
+            { question: 'Выбери карточку с ошибкой.', options: ['дожить', 'довесны'], correctIndex: 1 },
+            { question: 'Какое слово подойдет<br>к этой группе слов:<br><span style="font-size: 0.95em;">(в)ход, (от)плыл, (на)ездник</span>', options: ['(об)стол', '(об)рубить'], correctIndex: 1 },
+            { question: 'Как пишутся слова:<br>(по)смотрели, (с)прыгнуть,<br>(за)мазка, (у)гнал.', options: ['раздельно', 'слитно'], correctIndex: 1 },
+            { question: 'Выбери слово, которое подойдет<br>к этой группе слов:<br><span style="font-size: 0.95em;">(из)чашки, (над)полем, (до)яблони</span>', options: ['(в)метро', '(в)ход'], correctIndex: 0 },
+            { question: 'В каком слове нет предлога?', options: ['(у)пал', '(у)друга'], correctIndex: 0 },
+            { question: 'Выбери карточку с ошибкой.', options: ['покругу', 'побежал'], correctIndex: 0 },
+            { question: 'Прочитай начало сказки «Колобок».<br>Сколько в отрывке предлогов?<br><div style="text-align: left; margin-top: 10px; font-size: 0.9em; line-height: 1.4; background: rgba(255,255,255,0.85); padding: 10px; border-radius: 8px; border: 1px solid #1e4a1e;">Жили-были старик (со)старухой. Вот как-то раз просит старик:<br>- (Ис)пеки, старуха, колобок!<br>- Муки-то нету!<br>- А ты (по)коробу (по)скреби, (по)амбару (по)мети, вот и (на)берёшь муки (на)колобок.</div>', options: ['6', '4'], correctIndex: 1, isFairyTale: true, isNumberBtn: true }
+        ];
+
+        let currentPage = 0;
+        let score = 0;
+        const totalTasks = 12;
+        const panelContent = document.getElementById('panelContent');
+
+        function playWinSound() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    const startTime = ctx.currentTime + i * 0.13;
+                    gain.gain.setValueAtTime(0, startTime);
+                    gain.gain.linearRampToValueAtTime(0.28, startTime + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.45);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.5);
+                });
+                const chord = [261.63, 329.63, 392.00, 523.25];
+                chord.forEach(freq => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    const startTime = ctx.currentTime + 0.55;
+                    gain.gain.setValueAtTime(0, startTime);
+                    gain.gain.linearRampToValueAtTime(0.18, startTime + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 1.3);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(startTime);
+                    osc.stop(startTime + 1.4);
+                });
+            } catch(e) { console.log('Audio error:', e); }
+        }
+
+        function getFenceSVG() {
+            return `
+                <svg class="fence-svg" viewBox="0 0 1000 300" preserveAspectRatio="none">
+                    <defs>
+                        <pattern id="wood" patternUnits="userSpaceOnUse" width="20" height="300">
+                            <rect width="20" height="300" fill="#8B5A2B"/>
+                            <line x1="3" y1="0" x2="3" y2="300" stroke="#6B4226" stroke-width="0.8" opacity="0.6"/>
+                            <line x1="10" y1="0" x2="10" y2="300" stroke="#A06B3A" stroke-width="0.8" opacity="0.4"/>
+                            <line x1="16" y1="0" x2="16" y2="300" stroke="#6B4226" stroke-width="0.8" opacity="0.3"/>
+                        </pattern>
+                    </defs>
+                    <path d="M20,300 L20,55 L50,25 L80,55 L80,300 Z" fill="url(#wood)" stroke="#5a3a1a" stroke-width="1.5"/>
+                    <path d="M120,300 L120,55 L150,25 L180,55 L180,300 Z" fill="url(#wood)" stroke="#5a3a1a" stroke-width="1.5"/>
+                    <path d="M220,300 L220,55 L250,25 L280,55 L280,300 Z" fill="url(#wood)" stroke="#5a3a1a" stroke-width="1.5"/>
+                    <path d="M320,300 L320,55 L350,25 L380,55 L380,300 Z" fill="url(#wood)" stroke="#5a3a1a" stroke-width="1.5"/>
+                    <path d="M420,300 L420,55 L450,25 L480,55 L480,300 Z" fill="url(#wood)" stroke="#5a3a1a" stroke-width="1.5"/>
+                    <path d="M520,300 L520,55 L550,25 L580,55 L580,300 Z" fill="url(#wood)" stroke="#5a3a1a" stroke-width="1.5"/>
+                    <path d="M620,300 L620,55 L650,25 L680,55 L680,300 Z" fill="url(#wood)" stroke="#5a3a1a" stroke-width="1.5"/>
+                    <path d="M720,300 L720,55 L750,25 L780,55 L780,300 Z" fill="url(#wood)" stroke="#5a3a1a" stroke-width="1.5"/>
+                    <path d="M820,300 L820,55 L850,25 L880,55 L880,300 Z" fill="url(#wood)" stroke="#5a3a1a" stroke-width="1.5"/>
+                    <path d="M920,300 L920,55 L950,25 L980,55 L980,300 Z" fill="url(#wood)" stroke="#5a3a1a" stroke-width="1.5"/>
+                    
+                    <rect x="0" y="90" width="1000" height="18" fill="#6B4226" stroke="#4a2a10" stroke-width="1"/>
+                    <rect x="0" y="200" width="1000" height="18" fill="#6B4226" stroke="#4a2a10" stroke-width="1"/>
+                </svg>
+            `;
+        }
+
+        function getFlowersSVG() {
+            return `
+                <svg class="flowers-svg" viewBox="0 0 1000 200" preserveAspectRatio="none">
+                    <path d="M0,180 Q50,165 100,180 Q150,168 200,180 Q250,165 300,180 Q350,170 400,180 Q450,165 500,180 Q550,168 600,180 Q650,165 700,180 Q750,170 800,180 Q850,165 900,180 Q950,168 1000,180 L1000,200 L0,200 Z" fill="#4a9a3a"/>
+                    <path d="M0,190 Q40,182 80,190 Q120,180 160,190 Q200,185 240,190 Q280,180 320,190 Q360,185 400,190 Q440,180 480,190 Q520,185 560,190 Q600,180 640,190 Q680,185 720,190 Q760,180 800,190 Q840,185 880,190 Q920,180 960,190 Q980,186 1000,190 L1000,200 L0,200 Z" fill="#3a8a2a"/>
+                    
+                    <line x1="60" y1="180" x2="60" y2="160" stroke="#2d6a1e" stroke-width="3.5"/>
+                    <circle cx="60" cy="157" r="11" fill="#e74c3c"/>
+                    <circle cx="60" cy="157" r="4" fill="#f1c40f"/>
+                    
+                    <line x1="180" y1="180" x2="180" y2="163" stroke="#2d6a1e" stroke-width="3.5"/>
+                    <circle cx="180" cy="160" r="10" fill="#f1c40f"/>
+                    <circle cx="180" cy="160" r="3.5" fill="#e67e22"/>
+                    
+                    <line x1="320" y1="180" x2="320" y2="158" stroke="#2d6a1e" stroke-width="3.5"/>
+                    <circle cx="320" cy="155" r="11" fill="#3498db"/>
+                    <circle cx="320" cy="155" r="4" fill="#fff"/>
+                    
+                    <line x1="460" y1="180" x2="460" y2="162" stroke="#2d6a1e" stroke-width="3.5"/>
+                    <circle cx="460" cy="159" r="10" fill="#e91e63"/>
+                    <circle cx="460" cy="159" r="3.5" fill="#fff"/>
+                    
+                    <line x1="600" y1="180" x2="600" y2="163" stroke="#2d6a1e" stroke-width="3.5"/>
+                    <circle cx="600" cy="160" r="10" fill="#9b59b6"/>
+                    <circle cx="600" cy="160" r="3.5" fill="#fff"/>
+                    
+                    <line x1="740" y1="180" x2="740" y2="160" stroke="#2d6a1e" stroke-width="3.5"/>
+                    <circle cx="740" cy="157" r="11" fill="#ff9800"/>
+                    <circle cx="740" cy="157" r="4" fill="#fff"/>
+                    
+                    <line x1="880" y1="180" x2="880" y2="162" stroke="#2d6a1e" stroke-width="3.5"/>
+                    <circle cx="880" cy="159" r="10" fill="#00bcd4"/>
+                    <circle cx="880" cy="159" r="3.5" fill="#fff"/>
+                    
+                    <path d="M120,180 Q122,168 124,180" stroke="#2d6a1e" stroke-width="2.5" fill="none"/>
+                    <path d="M240,180 Q242,170 244,180" stroke="#2d6a1e" stroke-width="2.5" fill="none"/>
+                    <path d="M380,180 Q382,172 384,180" stroke="#2d6a1e" stroke-width="2.5" fill="none"/>
+                    <path d="M520,180 Q522,168 524,180" stroke="#2d6a1e" stroke-width="2.5" fill="none"/>
+                    <path d="M660,180 Q662,170 664,180" stroke="#2d6a1e" stroke-width="2.5" fill="none"/>
+                    <path d="M800,180 Q802,172 804,180" stroke="#2d6a1e" stroke-width="2.5" fill="none"/>
+                    <path d="M940,180 Q942,168 944,180" stroke="#2d6a1e" stroke-width="2.5" fill="none"/>
+                </svg>
+            `;
+        }
+
+        function renderIntro() {
+            const data = gameData[0];
+            let rulesHtml = '';
+            data.rules.forEach(r => {
+                rulesHtml += `<div class="rules-box"><h3>${r.title}</h3><p>${r.text}</p></div>`;
+            });
+
+            panelContent.innerHTML = `
+                <div class="intro-container">
+                    <div class="intro-content">
+                        <h1 class="title-scarlet">${data.title}</h1>
+                        <div class="greeting-main">${data.greetingMain}</div>
+                        <div class="greeting-text">${data.greetingText}</div>
+                        ${rulesHtml}
+                    </div>
+                    <div class="intro-footer">
+                        <button class="btn-start" onclick="startGame()">Начать</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTask(pageIndex) {
+            const task = gameData[pageIndex];
+            const taskNumber = pageIndex;
+
+            let buttonsHtml = '<div class="buttons-on-fence">';
+            task.options.forEach((opt, index) => {
+                const btnClass = task.isNumberBtn ? 'btn-answer number-btn' : 'btn-answer';
+                buttonsHtml += `
+                    <div class="btn-wrapper">
+                        <div class="rope"></div>
+                        <button class="${btnClass}" onclick="checkAnswer(${index})">${opt}</button>
+                    </div>
+                `;
+            });
+            buttonsHtml += '</div>';
+
+            let tabletClass = 'task-tablet';
+            if (task.isFairyTale) tabletClass += ' fairy-tale';
+
+            panelContent.innerHTML = `
+                <div class="score-counter" role="status" aria-live="polite">
+                    Из 12 заданий верно выполнено ${score}
+                </div>
+                
+                <div class="fence-container">
+                    ${getFenceSVG()}
+                    ${getFlowersSVG()}
+                    <div class="${tabletClass}">
+                        Задание ${taskNumber}: ${task.question}
+                    </div>
+                    ${buttonsHtml}
+                </div>
+            `;
+        }
+
+        function renderFinal() {
+            // Мотивирующее сообщение в 3 строки
+            let messageHtml = '';
+            if (score === totalTasks) {
+                messageHtml = `
+                    <span class="mot-line">Молодец!</span>
+                    <span class="mot-line">Ты отличный знаток правила</span>
+                    <span class="mot-line">правописания приставок и предлогов!</span>
+                `;
+            } else {
+                messageHtml = `
+                    <span class="mot-line">Надо еще потренироваться!</span>
+                    <span class="mot-line">Тренировки помогут подружиться</span>
+                    <span class="mot-line">с приставками и предлогами!</span>
+                `;
+            }
+
+            panelContent.innerHTML = `
+                <h1 class="final-title">Игра окончена!</h1>
+                <div class="final-score">Из 12 заданий верно выполнено ${score}</div>
+                <p class="motivational-text">${messageHtml}</p>
+                
+                <div class="fence-container" style="min-height: 200px; margin-top: 10px;">
+                    ${getFenceSVG()}
+                    ${getFlowersSVG()}
+                    <div class="poem-text" style="position: absolute; top: 53%; left: 50%; transform: translate(-50%, -50%); z-index: 5;">
+                        <span class="poem-line">Приставка к слову крепко льнёт —</span>
+                        <span class="poem-line">Слитно пишется, не отстаёт!</span>
+                        <span class="poem-line">А предлог — шустрый озорник:</span>
+                        <span class="poem-line">Отдельно скачет — вот шутник!</span>
+                    </div>
+                </div>
+                <div class="caps-container" id="capsContainer"></div>
+            `;
+            
+            startBalloons();
+        }
+
+        function startGame() {
+            currentPage = 1;
+            renderTask(currentPage);
+        }
+
+        function showError() {
+            const container = document.querySelector('.fence-container');
+            if (!container) return;
+            const msg = document.createElement('div');
+            msg.className = 'error-message';
+            msg.innerText = 'Ошибка!';
+            container.appendChild(msg);
+            setTimeout(() => {
+                if (msg.parentNode) msg.remove();
+            }, 1800);
+        }
+
+        function goToNext() {
+            if (currentPage < gameData.length - 1) {
+                currentPage++;
+                renderTask(currentPage);
+            } else {
+                renderFinal();
+            }
+        }
+
+        function checkAnswer(selectedIndex) {
+            const task = gameData[currentPage];
+            const isCorrect = selectedIndex === task.correctIndex;
+            
+            document.querySelectorAll('.btn-answer').forEach(btn => {
+                btn.style.pointerEvents = 'none';
+            });
+            
+            if (isCorrect) {
+                score++;
+                playWinSound();
+                setTimeout(() => goToNext(), 800);
+            } else {
+                showError();
+                setTimeout(() => goToNext(), 1800);
+            }
+        }
+
+        function startBalloons() {
+            const container = document.getElementById('capsContainer');
+            if (!container) return;
+            
+            if (window.balloonsInterval) clearInterval(window.balloonsInterval);
+            
+            const colors = [
+                'hue-rotate(0deg)', 'hue-rotate(45deg)', 'hue-rotate(90deg)',
+                'hue-rotate(140deg)', 'hue-rotate(200deg)', 'hue-rotate(250deg)',
+                'hue-rotate(290deg)', 'hue-rotate(320deg)'
+            ];
+            
+            window.balloonsInterval = setInterval(() => {
+                const balloon = document.createElement('div');
+                balloon.classList.add('balloon');
+                balloon.innerText = '🎈';
+                balloon.style.left = Math.random() * 95 + '%';
+                balloon.style.animationDuration = (Math.random() * 2 + 3.5) + 's';
+                balloon.style.fontSize = (Math.random() * 1.5 + 2) + 'em';
+                balloon.style.filter = colors[Math.floor(Math.random() * colors.length)];
+                container.appendChild(balloon);
+
+                setTimeout(() => {
+                    if (balloon.parentNode) balloon.remove();
+                }, 6000);
+            }, 200);
+        }
+
+        (function() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 800, H = 600;
+
+            let doorProgress = 0;
+            let isDoorOpen = false;
+            const DOOR_SPEED = 0.04;
+
+            let owlHeadAngle = 0;
+            let owlHeadDir = 1;
+            let owlBlink = false;
+            let blinkTimer = 0;
+
+            let windowGlow = false;
+            let windowGlowTimer = 0;
+
+            let clouds = [
+                { x: 50,  y: 70,  size: 50, speed: 0.08, alpha: 1 },
+                { x: 250, y: 110, size: 40, speed: 0.12, alpha: 1 },
+                { x: 500, y: 50,  size: 60, speed: 0.15, alpha: 1 },
+                { x: 720, y: 85,  size: 45, speed: 0.1, alpha: 1 }
+            ];
+
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (typeof r === 'number') r = { tl: r, tr: r, br: r, bl: r };
+                const rad = r.tl || 0;
+                this.moveTo(x + rad, y);
+                this.lineTo(x + w - rad, y);
+                this.quadraticCurveTo(x + w, y, x + w, y + rad);
+                this.lineTo(x + w, y + h - rad);
+                this.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
+                this.lineTo(x + rad, y + h);
+                this.quadraticCurveTo(x, y + h, x, y + h - rad);
+                this.lineTo(x, y + rad);
+                this.quadraticCurveTo(x, y, x + rad, y);
+                this.closePath();
+                return this;
+            };
+
+            function drawTextWithLetterSpacing(text, x, y, spacing) {
+                const chars = text.split('');
+                const widths = chars.map(c => ctx.measureText(c).width);
+                let totalWidth = widths.reduce((a, b) => a + b, 0) + spacing * (chars.length - 1);
+                let curX = x - totalWidth / 2;
+                const prevAlign = ctx.textAlign;
+                ctx.textAlign = 'left';
+                chars.forEach((c, i) => {
+                    ctx.fillText(c, curX, y);
+                    curX += widths[i] + spacing;
+                });
+                ctx.textAlign = prevAlign;
+            }
+
+            function drawTree(x, y, type, size) {
+                const s = size / 300;
+                ctx.fillStyle = '#5a3a1a';
+                const trunkW = 25 * s, trunkH = 100 * s;
+                ctx.fillRect(x - trunkW / 2, y - trunkH, trunkW, trunkH);
+                
+                ctx.strokeStyle = '#4a2a10'; ctx.lineWidth = 1.5 * s;
+                for (let i = 0; i < 5; i++) {
+                    const ly = y - trunkH + 15 * s + i * 18 * s;
+                    ctx.beginPath(); ctx.moveTo(x - trunkW / 2 + 3 * s, ly); ctx.quadraticCurveTo(x, ly + 4 * s, x + trunkW / 2 - 3 * s, ly - 2 * s); ctx.stroke();
+                }
+
+                if (type === 'pine') {
+                    ctx.fillStyle = '#1a4a1a';
+                    for (let i = 0; i < 3; i++) {
+                        const lw = (80 - i * 18) * s, lh = 80 * s, ly = y - trunkH - i * 55 * s - lh;
+                        ctx.beginPath(); ctx.moveTo(x, ly); ctx.lineTo(x - lw, ly + lh); ctx.lineTo(x + lw, ly + lh); ctx.closePath(); ctx.fill();
+                    }
+                    ctx.fillStyle = '#143d14';
+                    for (let i = 0; i < 3; i++) {
+                        const lw = (60 - i * 14) * s, lh = 55 * s, ly = y - trunkH - i * 55 * s - lh + 12 * s;
+                        ctx.beginPath(); ctx.moveTo(x, ly); ctx.lineTo(x - lw, ly + lh); ctx.lineTo(x + lw, ly + lh); ctx.closePath(); ctx.fill();
+                    }
+                } else {
+                    ctx.fillStyle = '#1a4a1a';
+                    const cr = 65 * s, cy = y - trunkH - cr * 0.7;
+                    ctx.beginPath(); ctx.arc(x, cy, cr, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(x - cr * 0.7, cy + cr * 0.3, cr * 0.8, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(x + cr * 0.7, cy + cr * 0.3, cr * 0.8, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(x, cy - cr * 0.5, cr * 0.7, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#143d14';
+                    ctx.beginPath(); ctx.arc(x - cr * 0.3, cy + cr * 0.1, cr * 0.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(x + cr * 0.4, cy - cr * 0.2, cr * 0.45, 0, Math.PI * 2); ctx.fill();
+                }
+            }
+
+            function drawForest() {
+                ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+                const trees = [
+                    { x: 50, y: 480, type: 'leaf', size: 300 }, { x: 110, y: 470, type: 'pine', size: 300 },
+                    { x: 170, y: 475, type: 'leaf', size: 300 }, { x: 220, y: 468, type: 'pine', size: 310 },
+                    { x: 280, y: 465, type: 'pine', size: 320 }, { x: 290, y: 465, type: 'leaf', size: 320 },
+                    { x: 320, y: 460, type: 'pine', size: 350 }, { x: 400, y: 450, type: 'pine', size: 380 },
+                    { x: 480, y: 460, type: 'pine', size: 350 }, { x: 550, y: 465, type: 'pine', size: 320 },
+                    { x: 630, y: 480, type: 'pine', size: 300 }, { x: 700, y: 472, type: 'pine', size: 310 },
+                    { x: 690, y: 470, type: 'leaf', size: 300 }, { x: 750, y: 475, type: 'pine', size: 300 },
+                    { x: 790, y: 480, type: 'leaf', size: 300 }
+                ];
+                trees.forEach(t => drawTree(t.x, t.y, t.type, t.size));
+                ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.font = '100px sans-serif';
+                ctx.fillText('🪵', 50, 540); ctx.fillText('🪵', 750, 535);
+            }
+
+            function drawGrass() {
+                ctx.shadowBlur = 0;
+                for (let row = 0; row < 12; row++) {
+                    const yBase = 530 + row * 7, count = 70 + row * 6;
+                    for (let i = 0; i < count; i++) {
+                        const x = (i / count) * W + Math.sin(i * 0.7 + row * 1.5) * 5;
+                        const height = 12 + Math.sin(i * 1.3 + row * 2) * 10 + 6;
+                        ctx.fillStyle = (i % 2 === 0) ? '#3a8a2a' : '#2d6a1e';
+                        ctx.beginPath(); ctx.moveTo(x, yBase); ctx.lineTo(x - 3, yBase - height); ctx.lineTo(x + 3, yBase - height * 0.6); ctx.closePath(); ctx.fill();
+                    }
+                }
+            }
+
+            function drawClouds() {
+                clouds.forEach(c => {
+                    if (c.x < -c.size * 2) c.alpha = 0;
+                    else if (c.x < 0) c.alpha = (c.x + c.size * 2) / (c.size * 2);
+                    else c.alpha = 1;
+                    ctx.save(); ctx.globalAlpha = c.alpha; ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                    ctx.beginPath();
+                    ctx.arc(c.x, c.y, c.size * 0.6, 0, Math.PI * 2);
+                    ctx.arc(c.x + c.size * 0.7, c.y - c.size * 0.2, c.size * 0.8, 0, Math.PI * 2);
+                    ctx.arc(c.x + c.size * 1.2, c.y + c.size * 0.1, c.size * 0.6, 0, Math.PI * 2);
+                    ctx.arc(c.x + c.size * 0.4, c.y + c.size * 0.2, c.size * 0.5, 0, Math.PI * 2);
+                    ctx.fill(); ctx.restore();
+                });
+            }
+
+            function drawBabaYaga() {
+                const t = Date.now() / 600;
+                const bobY = Math.sin(t) * 3, bobX = Math.cos(t * 0.7) * 2, tilt = Math.sin(t * 0.8) * 0.05;
+                const cx = 120 + bobX, cy = 90 + bobY;
+                ctx.save(); ctx.translate(cx, cy); ctx.rotate(tilt);
+                
+                ctx.save(); ctx.rotate(-0.3); ctx.strokeStyle = '#6B4423'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(-45, 5); ctx.lineTo(30, -10); ctx.stroke();
+                ctx.fillStyle = '#D4A84A'; ctx.beginPath(); ctx.moveTo(-45, 5); ctx.lineTo(-70, -5); ctx.lineTo(-72, 5); ctx.lineTo(-70, 15); ctx.lineTo(-45, 8); ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = '#B8902A'; ctx.lineWidth = 1;
+                for (let i = -3; i <= 3; i++) { ctx.beginPath(); ctx.moveTo(-45, 6 + i * 0.5); ctx.lineTo(-70, 5 + i * 2); ctx.stroke(); }
+                ctx.restore();
+
+                ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.ellipse(0, 25, 28, 5, 0, 0, Math.PI * 2); ctx.fill();
+                const stupaGrad = ctx.createLinearGradient(-22, 0, 22, 0);
+                stupaGrad.addColorStop(0, '#5A3A1A'); stupaGrad.addColorStop(0.5, '#8B5A2B'); stupaGrad.addColorStop(1, '#4A2A10');
+                ctx.fillStyle = stupaGrad; ctx.beginPath(); ctx.moveTo(-22, -5); ctx.lineTo(-25, 20); ctx.lineTo(25, 20); ctx.lineTo(22, -5); ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = '#2A1A0A'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(-23, 2); ctx.lineTo(23, 2); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(-24, 14); ctx.lineTo(24, 14); ctx.stroke();
+                ctx.fillStyle = '#2A1A0A'; ctx.beginPath(); ctx.ellipse(0, -5, 22, 5, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#1A0A05'; ctx.beginPath(); ctx.ellipse(0, -5, 18, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = '#2A1A2A'; ctx.beginPath(); ctx.moveTo(-15, -5); ctx.quadraticCurveTo(-18, -25, -10, -30); ctx.lineTo(10, -30); ctx.quadraticCurveTo(18, -25, 15, -5); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = '#4A2A3A'; ctx.fillRect(-8, -20, 6, 5); ctx.fillRect(5, -15, 5, 4);
+                ctx.strokeStyle = '#D0D0D0'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+                for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(-8 + i * 2, -45); ctx.quadraticCurveTo(-10 + i * 2, -35, -12 + i * 2, -25); ctx.stroke(); }
+                for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(8 - i * 2, -45); ctx.quadraticCurveTo(10 - i * 2, -35, 12 - i * 2, -25); ctx.stroke(); }
+                ctx.fillStyle = '#C9A882'; ctx.beginPath(); ctx.arc(0, -38, 10, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#B8906A'; ctx.beginPath(); ctx.moveTo(-2, -36); ctx.quadraticCurveTo(10, -36, 8, -32); ctx.quadraticCurveTo(7, -30, 4, -29); ctx.quadraticCurveTo(2, -30, 0, -32); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = '#5A3A2A'; ctx.beginPath(); ctx.arc(6, -33, 1.2, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.arc(-5, -40, 2.5, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#2A1A0A'; ctx.beginPath(); ctx.arc(-5, -40, 1.5, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.arc(3, -40, 2, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#2A1A0A'; ctx.beginPath(); ctx.arc(3, -40, 1.2, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#5A1A1A'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-3, -33); ctx.quadraticCurveTo(0, -31, 3, -33); ctx.stroke();
+                ctx.restore();
+            }
+
+            function drawHut(scale) {
+                ctx.save();
+                const cx = W / 2, cy = H / 2 + 80;
+                ctx.translate(cx, cy); ctx.scale(scale, scale);
+                drawLegs(); drawWalls(); drawRoof(); drawChimney(); drawWindow(); drawDoor(doorProgress, 40, -40);
+                ctx.restore();
+            }
+
+            function drawChimney() {
+                const chX = 55, chW = 22, chH = 35, chTopY = -74 - chH;
+                ctx.save();
+                ctx.beginPath(); ctx.moveTo(-150, -200); ctx.lineTo(150, -200); ctx.lineTo(150, -50); ctx.lineTo(95, -50); ctx.lineTo(0, -130); ctx.lineTo(-95, -50); ctx.lineTo(-150, -50); ctx.closePath(); ctx.clip();
+                ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+                const grad = ctx.createLinearGradient(chX - chW / 2, chTopY, chX + chW / 2, chTopY);
+                grad.addColorStop(0, '#8B3A2A'); grad.addColorStop(0.5, '#B85040'); grad.addColorStop(1, '#6B2A1A');
+                ctx.fillStyle = grad; ctx.fillRect(chX - chW / 2, chTopY, chW, chH);
+                ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+                ctx.fillStyle = '#5A2015'; ctx.fillRect(chX - chW / 2 - 3, chTopY - 4, chW + 6, 6);
+                ctx.fillStyle = '#1A0A05'; ctx.beginPath(); ctx.ellipse(chX, chTopY - 1, chW / 2 - 2, 3, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
+
+            function drawLegs() {
+                function drawOneLeg(xOff, yOff, dir) {
+                    ctx.save(); ctx.translate(xOff, yOff);
+                    ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+                    const grad = ctx.createLinearGradient(-8, 0, 8, 0);
+                    grad.addColorStop(0, '#A67B5B'); grad.addColorStop(0.4, '#D28C4A'); grad.addColorStop(0.8, '#B87B3E');
+                    ctx.fillStyle = grad; ctx.beginPath(); ctx.roundRect(-8, -30, 16, 35, 6); ctx.fill();
+                    ctx.fillStyle = '#C4823A'; ctx.shadowBlur = 8; ctx.beginPath(); ctx.ellipse(0, 0, 12, 8, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.restore();
+                }
+                drawOneLeg(-45, 65, -1); drawOneLeg(45, 65, 1);
+            }
+
+            function drawWalls() {
+                const wallW = 150, wallH = 120, x = -wallW / 2, y = -wallH / 2 - 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 16; ctx.shadowOffsetY = 6;
+                ctx.fillStyle = '#8B6B4A'; ctx.beginPath(); ctx.roundRect(x, y, wallW, wallH, 8); ctx.fill();
+                ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
+                const logCount = 8, logH = wallH / logCount;
+                for (let i = 0; i < logCount; i++) {
+                    const ly = y + i * logH + logH / 2;
+                    const lw = wallW - 6 - Math.sin(i * 1.5) * 6;
+                    const lx = x + (wallW - lw) / 2;
+                    const grad = ctx.createLinearGradient(lx, ly - logH / 2, lx, ly + logH / 2);
+                    const lightness = 0.6 + 0.4 * (i / logCount);
+                    grad.addColorStop(0, `hsl(30, 35%, ${lightness * 50 + 20}%)`);
+                    grad.addColorStop(0.5, `hsl(30, 40%, ${lightness * 40 + 30}%)`);
+                    grad.addColorStop(1, `hsl(30, 35%, ${lightness * 45 + 20}%)`);
+                    ctx.fillStyle = grad; ctx.beginPath(); ctx.roundRect(lx, ly - logH / 2 + 2, lw, logH - 4, 4); ctx.fill();
+                }
+            }
+
+            function drawRoof() {
+                const roofW = 190, roofH = 80, x = -roofW / 2, y = -120 - 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.25)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 6;
+                ctx.beginPath(); ctx.moveTo(x, y + roofH); ctx.lineTo(0, y); ctx.lineTo(x + roofW, y + roofH); ctx.closePath();
+                const grad = ctx.createLinearGradient(0, y, 0, y + roofH);
+                grad.addColorStop(0, '#A0522D'); grad.addColorStop(0.5, '#8B4513'); grad.addColorStop(1, '#6B3410');
+                ctx.fillStyle = grad; ctx.fill();
+            }
+
+            function drawWindow() {
+                const wx = -35, wy = -40, ww = 45, wh = 45;
+                ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 4;
+                ctx.fillStyle = '#5D3A1A'; ctx.beginPath(); ctx.roundRect(wx - 4, wy - 4, ww + 8, wh + 8, 6); ctx.fill();
+                const glowColor = windowGlow ? '#FFD700' : '#FFE4A0';
+                const grad = ctx.createRadialGradient(wx + 10, wy + 10, 5, wx + ww / 2, wy + wh / 2, 40);
+                grad.addColorStop(0, glowColor); grad.addColorStop(0.5, windowGlow ? '#FFA500' : '#87CEEB'); grad.addColorStop(1, windowGlow ? '#FF8C00' : '#4A6A8A');
+                ctx.fillStyle = grad; ctx.shadowBlur = windowGlow ? 40 : 20;
+                ctx.beginPath(); ctx.roundRect(wx, wy, ww, wh, 4); ctx.fill();
+                ctx.shadowBlur = 0; ctx.strokeStyle = '#3D2814'; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(wx + ww / 2, wy); ctx.lineTo(wx + ww / 2, wy + wh); ctx.moveTo(wx, wy + wh / 2); ctx.lineTo(wx + ww, wy + wh / 2); ctx.stroke();
+            }
+
+            function drawDoor(progress, dxOffset = 0, dyOffset = 0) {
+                const doorW = 44, doorH = 70;
+                const dx = -doorW / 2 + dxOffset;
+                const dy = 10 + dyOffset;
+
+                ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 4;
+
+                if (progress > 0.1) {
+                    ctx.fillStyle = '#1A0F08'; ctx.shadowBlur = 6;
+                    ctx.beginPath(); ctx.roundRect(dx + 2, dy, doorW - 4, doorH, 4); ctx.fill();
+                }
+
+                const currentW = doorW * (1 - progress);
+
+                if (currentW > 2) {
+                    ctx.shadowBlur = 14; ctx.shadowOffsetY = 4;
+                    const grad = ctx.createLinearGradient(dx, dy, dx + currentW, dy);
+                    grad.addColorStop(0, '#8B5A2B'); grad.addColorStop(0.3, '#A67B5B'); grad.addColorStop(0.7, '#B87B3E'); grad.addColorStop(1, '#6B3F1F');
+                    ctx.fillStyle = grad; ctx.beginPath(); ctx.roundRect(dx, dy, currentW, doorH, 4); ctx.fill();
+
+                    ctx.fillStyle = '#3D2814';
+                    ctx.beginPath(); ctx.arc(dx + 6, dy + 12, 4, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(dx + 6, dy + doorH - 12, 4, 0, Math.PI * 2); ctx.fill();
+
+                    if (!isDoorOpen && currentW > 18) {
+                        ctx.save();
+                        ctx.fillStyle = '#FFF';
+                        ctx.font = 'bold 7px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.shadowBlur = 0;
+                        drawTextWithLetterSpacing('Нажми', dx + currentW / 2, dy + doorH / 2 - 12, 1.2);
+                        drawTextWithLetterSpacing('на', dx + currentW / 2, dy + doorH / 2, 1.2);
+                        drawTextWithLetterSpacing('дверь!', dx + currentW / 2, dy + doorH / 2 + 12, 1.2);
+                        ctx.restore();
+                    }
+                }
+
+                if (progress > 0.9) {
+                    ctx.shadowBlur = 40; ctx.shadowColor = 'rgba(255, 200, 100, 0.4)';
+                    ctx.fillStyle = 'rgba(255, 200, 100, 0.1)';
+                    ctx.beginPath(); ctx.roundRect(dx + 4, dy + 4, doorW - 8, doorH - 8, 4); ctx.fill();
+                }
+            }
+
+            function drawOwlOnStump() {
+                const stumpX = 50, stumpY = 540, owlX = stumpX, owlY = stumpY - 130;
+                ctx.save(); ctx.translate(owlX, owlY);
+                ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 15; ctx.shadowOffsetY = 5;
+                ctx.fillStyle = '#6B4F3A'; ctx.beginPath(); ctx.ellipse(0, 10, 30, 35, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#D4B08C'; ctx.beginPath(); ctx.ellipse(0, 15, 18, 22, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#5A3E2E'; ctx.beginPath(); ctx.ellipse(-28, 10, 12, 28, -0.2, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(28, 10, 12, 28, 0.2, 0, Math.PI * 2); ctx.fill();
+                ctx.save(); ctx.translate(0, -15); ctx.rotate(owlHeadAngle * Math.PI / 180);
+                ctx.shadowBlur = 10; ctx.fillStyle = '#6B4F3A'; ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#5A3E2E'; ctx.beginPath(); ctx.moveTo(-16, -12); ctx.lineTo(-22, -28); ctx.lineTo(-8, -18); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(16, -12); ctx.lineTo(22, -28); ctx.lineTo(8, -18); ctx.fill();
+                const eyeOpen = !owlBlink;
+                ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.arc(-8, -4, 8, 0, Math.PI * 2); ctx.fill();
+                if (eyeOpen) { ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.arc(-8, -4, 5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(-6, -2, 3, 0, Math.PI * 2); ctx.fill(); }
+                ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.arc(8, -4, 8, 0, Math.PI * 2); ctx.fill();
+                if (eyeOpen) { ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.arc(8, -4, 5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(10, -2, 3, 0, Math.PI * 2); ctx.fill(); }
+                ctx.fillStyle = '#D28C4A'; ctx.beginPath(); ctx.moveTo(0, 2); ctx.lineTo(-5, 8); ctx.lineTo(5, 8); ctx.closePath(); ctx.fill();
+                ctx.restore(); ctx.restore();
+            }
+
+            function drawSwanOnStump() {
+                ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.font = '100px sans-serif';
+                ctx.fillText('🦢', 750, 535 - 60);
+            }
+
+            function drawScene() {
+                ctx.clearRect(0, 0, W, H);
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+                skyGrad.addColorStop(0, '#6BB8E8'); skyGrad.addColorStop(0.7, '#A8D8EA'); skyGrad.addColorStop(1, '#7BC043');
+                ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, H);
+                drawClouds(); drawBabaYaga(); drawForest();
+                const chimneyTopX = 499, chimneyTopY = 184;
+                for (let i = 0; i < 6; i++) {
+                    const t = (Date.now() / 1800 + i * 0.7) % 4;
+                    const dx2 = Math.sin(t * 1.8 + i) * 12, dy2 = -t * 22, radius = 8 + t * 5;
+                    const alpha = Math.max(0, 0.25 - t * 0.05);
+                    ctx.fillStyle = `rgba(210, 210, 215, ${alpha})`;
+                    ctx.beginPath(); ctx.arc(chimneyTopX + dx2, chimneyTopY + dy2, radius, 0, Math.PI * 2); ctx.fill();
+                }
+                drawHut(1.8); drawGrass(); drawOwlOnStump(); drawSwanOnStump();
+            }
+
+            function animate() {
+                owlHeadAngle += 0.8 * owlHeadDir;
+                if (owlHeadAngle > 45) { owlHeadAngle = 45; owlHeadDir = -1; }
+                if (owlHeadAngle < -45) { owlHeadAngle = -45; owlHeadDir = 1; }
+                blinkTimer += 0.02;
+                if (blinkTimer > 1.5 + Math.random() * 2) { blinkTimer = 0; owlBlink = true; setTimeout(() => { owlBlink = false; }, 150); }
+                windowGlowTimer += 0.02;
+                if (windowGlowTimer > 2.0) { windowGlowTimer = 0; windowGlow = !windowGlow; }
+                if (isDoorOpen && doorProgress < 1) doorProgress = Math.min(doorProgress + DOOR_SPEED, 1);
+                else if (!isDoorOpen && doorProgress > 0) doorProgress = Math.max(doorProgress - DOOR_SPEED, 0);
+                
+                clouds.forEach(c => {
+                    c.x += c.speed;
+                    c.y += Math.sin(Date.now() / 2000 + c.x * 0.01) * 0.15;
+                    if (c.x > W + 100) { c.x = -100; c.alpha = 0; }
+                });
+                
+                drawScene(); requestAnimationFrame(animate);
+            }
+
+            canvas.addEventListener('click', function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+                const clickX = (e.clientX - rect.left) * scaleX, clickY = (e.clientY - rect.top) * scaleY;
+                const doorX = 432, doorY = 326, doorW = 80, doorH = 126;
+                if (clickX >= doorX - 15 && clickX <= doorX + doorW + 15 && clickY >= doorY - 15 && clickY <= doorY + doorH + 15) {
+                    isDoorOpen = !isDoorOpen;
+                }
+            });
+
+            canvas.addEventListener('mousemove', function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+                const clickX = (e.clientX - rect.left) * scaleX, clickY = (e.clientY - rect.top) * scaleY;
+                const doorX = 432, doorY = 326, doorW = 80, doorH = 126;
+                canvas.style.cursor = (clickX >= doorX - 15 && clickX <= doorX + doorW + 15 && clickY >= doorY - 15 && clickY <= doorY + doorH + 15) ? 'pointer' : 'default';
+            });
+
+            animate();
+        })();
+
+        renderIntro();
+    </script>
+</body>
+</html>
